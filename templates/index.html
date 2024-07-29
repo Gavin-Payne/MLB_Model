@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Program Runner</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            font-family: 'Montserrat', sans-serif;
+        }
+        p {
+            color: #666;
+        }
+        button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            color: #333;
+            background-color: #fafafa;
+            box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .spinner {
+            margin-top: 20px;
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .link:hover {
+            background-color: #ff6f61;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the MLB Model</h1>
+        <p>Click the button below to run the Model and receive today's picks </p>
+        <button onclick="runPythonProgram()">Run MLB Model</button>
+        <div class="spinner" id="spinner"></div>
+        <textarea id="output" placeholder="Picks Will Appear Here..." readonly></textarea>
+        <a class="link" href="/history">Go to History</a>
+    </div>
+
+    <script>
+        function runPythonProgram() {
+            document.getElementById('spinner').style.display = 'block';
+            fetch('/run_python_program')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('output').value = data;
+                    document.getElementById('spinner').style.display = 'none';
+                })
+                .catch(error => {
+                    document.getElementById('spinner').style.display = 'none';
+                    console.error('Error:', error);
+                });
+        }
+
+    </script>
+</body>
+</html>
