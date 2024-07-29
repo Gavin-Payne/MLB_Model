@@ -197,8 +197,7 @@ for i, n in enumerate(Hplays):
         sh.update_cell(i, 24, n[1]+100)
     else:
         sh.update_cell(i, 24, n[1]-100)
-print("Strikeout Props:\n\n" + "\n".join([f'{Kplays[i][0]}   {Kplays[i][2]} U' for i in range(len(Kplays))])+
-      "\n\nHits Allowed Props:\n\n"+"\n".join([f'{Hplays[i][0]}   {Hplays[i][2]} U' for i in range(len(Hplays))])) 
+print("Strikeout Props:\n\n" + "\n".join([f'{Kplays[i][0]}   {Kplays[i][2]} U' for i in range(len(Kplays))])) 
         
 
 

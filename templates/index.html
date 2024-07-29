@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Program Runner</title>
+    <title>MLB Model Runner</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -21,7 +21,8 @@
             border-radius: 10px;
             box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
             width: 80%;
-            max-width: 600px;
+            max-width: 1000px;
+            margin: 20px auto;
         }
         h1 {
             color: #333;
@@ -89,15 +90,22 @@
             background-color: #ff6f61;
             transform: scale(1.05);
         }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: none; /* Initially hide the image */
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Welcome to the MLB Model</h1>
-        <p>Click the button below to run the Model and receive today's picks </p>
+        <p>Click the button below to run the Model and receive today's picks</p>
         <button onclick="runPythonProgram()">Run MLB Model</button>
         <div class="spinner" id="spinner"></div>
         <textarea id="output" placeholder="Picks Will Appear Here..." readonly></textarea>
+        <img id="heatmap" src="" alt="Heatmap">
         <a class="link" href="/history">Go to History</a>
     </div>
 
@@ -105,17 +113,20 @@
         function runPythonProgram() {
             document.getElementById('spinner').style.display = 'block';
             fetch('/run_python_program')
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
-                    document.getElementById('output').value = data;
+                    document.getElementById('output').value = data.message || 'No picks available';
+                    document.getElementById('heatmap').src = 'data:image/png;base64,' + data.image;
+                    document.getElementById('heatmap').style.display = 'block';
                     document.getElementById('spinner').style.display = 'none';
                 })
                 .catch(error => {
                     document.getElementById('spinner').style.display = 'none';
                     console.error('Error:', error);
+                    document.getElementById('output').value = 'An error occurred while fetching data.';
                 });
         }
-
     </script>
 </body>
 </html>
+

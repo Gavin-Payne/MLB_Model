@@ -21,7 +21,7 @@
             border-radius: 10px;
             box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
             width: 80%;
-            max-width: 600px;
+            max-width: 1000px; /* Increase width if needed */
         }
         h1 {
             color: #333;
@@ -46,12 +46,33 @@
         a:hover {
             background-color: #45a049;
         }
+        .table-container {
+            overflow-x: auto; /* Horizontal scrollbar */
+            max-height: 600px; /* Adjust height to your preference */
+        }
+        table {
+            margin: 20px 0;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>History</h1>
         <p>This is the history page.</p>
+        <!-- Table container with scrollbars -->
+        <div class="table-container">
+            {{ table_data|safe }}
+        </div>
         <a href="/">Go back to Home</a>
     </div>
 </body>

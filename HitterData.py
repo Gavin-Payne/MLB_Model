@@ -69,4 +69,5 @@ for section in lineup_sections:
             team_data.append(remove_accents(player_name))
         team_lineups.append(team_data)
 
-sheet.update(f"A2:J{len(team_lineups)+1}", team_lineups)
+sheet.batch_clear(["A2:J31"])
+sheet.update(range_name=f"A2:J{len(team_lineups)+1}", values=team_lineups)
