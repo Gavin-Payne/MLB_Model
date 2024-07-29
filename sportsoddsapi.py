@@ -8,8 +8,15 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+google_cloud_service_account_json = os.getenv('GOOGLE_CLOUD_SERVICE_ACCOUNT')
+
+if google_cloud_service_account_json:
+    google_cloud_service_account = json.loads(google_cloud_service_account_json)
+else:
+    raise ValueError("GOOGLE_CLOUD_SERVICE_ACCOUNT environment variable not set")
+
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+creds = Credentials.from_service_account_info(google_cloud_service_account, scopes=scopes)
 client = gspread.authorize(creds)
 
 API_Key = os.getenv("API_Key")

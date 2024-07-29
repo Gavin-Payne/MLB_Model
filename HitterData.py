@@ -5,12 +5,20 @@ from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
 import os
 import unicodedata
+import json
 
 
 load_dotenv()
 
+google_cloud_service_account_json = os.getenv('GOOGLE_CLOUD_SERVICE_ACCOUNT')
+
+if google_cloud_service_account_json:
+    google_cloud_service_account = json.loads(google_cloud_service_account_json)
+else:
+    raise ValueError("GOOGLE_CLOUD_SERVICE_ACCOUNT environment variable not set")
+
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+creds = Credentials.from_service_account_info(google_cloud_service_account, scopes=scopes)
 client = gspread.authorize(creds)
 
 sheet_id = os.getenv("Sheet_ID")
