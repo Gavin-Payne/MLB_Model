@@ -93,7 +93,7 @@
         img {
             max-width: 100%;
             height: auto;
-            display: none; /* Initially hide the image */
+            display: none;
             margin-top: 20px;
         }
     </style>
@@ -101,7 +101,7 @@
 <body>
     <div class="container">
         <h1>Welcome to the MLB Model</h1>
-        <p>Click the button below to run the Model and receive today's picks</p>
+        <p>Click the button below to run the Model and receive today's picks. Please allow several seconds as we access the most up-to-date lineups and odds</p>
         <button onclick="runPythonProgram()">Run MLB Model</button>
         <div class="spinner" id="spinner"></div>
         <textarea id="output" placeholder="Picks Will Appear Here..." readonly></textarea>

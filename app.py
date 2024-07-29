@@ -46,20 +46,16 @@ def run_python_program():
     CalcTable = pd.DataFrame(sh.get("H5:S34"))
     
     
-    # Check if the number of names matches the number of rows
     if len(names) != CalcTable.shape[0]:
-        # Adjust the number of names or rows to match
         if len(names) > CalcTable.shape[0]:
-            # More names than rows: truncate names list
             names = names[:CalcTable.shape[0]]
         else:
-            # More rows than names: truncate dataframe
             CalcTable = CalcTable.iloc[:len(names)]
     
 
     CalcTable.index = names
     CalcTable.replace(['#N/A', '#VALUE!'], np.nan, inplace=True)
-    CalcTable = CalcTable.apply(pd.to_numeric, errors='coerce')  # Ensure to handle conversion issues
+    CalcTable = CalcTable.apply(pd.to_numeric, errors='coerce') 
     CalcTable.fillna(0, inplace=True)
     CalcTable = CalcTable.loc[~(CalcTable == 0).all(axis=1)]
 
@@ -96,10 +92,8 @@ def history():
             color = 'background-color: white'
         return color
 
-    # Apply the formatting to the DataFrame
     styled_df = df.style.applymap(highlight_high_scores, subset=['w/l'])
 
-    # Convert the styled DataFrame to HTML
     table_html = styled_df.to_html()
     return render_template('history.html', table_data=table_html)
 
