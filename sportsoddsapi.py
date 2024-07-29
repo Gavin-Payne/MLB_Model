@@ -20,7 +20,7 @@ creds = Credentials.from_service_account_info(google_cloud_service_account, scop
 client = gspread.authorize(creds)
 
 API_Key = os.getenv("API_Key")
-sheet_id = os.getenv("Sheet_ID")
+Sheet_ID = os.getenv("Sheet_ID")
 
 def get_ids():
     response = requests.get(f'https://api.the-odds-api.com/v4/sports/baseball_mlb/events?apiKey={API_Key}')
@@ -56,7 +56,7 @@ def flatten_data(data, Used_Names, mi, ma):
 
 # Function to update worksheet
 def update_worksheet(sheet_name, market, mi, ma):
-    sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid=478985565').worksheet(sheet_name)
+    sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/edit#gid=478985565').worksheet(sheet_name)
     sheet.clear()
 
     headers = ['ID', 'Sport Title', 'Commence Time', 'Home Team', 'Away Team', 
@@ -81,5 +81,5 @@ update_worksheet("OddsAutomationH", "pitcher_hits_allowed", -170, 125)
 update_worksheet("OddsAutomationPO", "pitcher_outs", -250, 250)
 
 # Update the date in the sheet
-sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid=478985565').worksheet("OddsAutomationK")
+sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/edit#gid=478985565').worksheet("OddsAutomationK")
 sheet.update_cell(1, 16, datetime.today().strftime('%Y-%m-%d'))

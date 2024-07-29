@@ -21,8 +21,8 @@ scopes = ["https://www.googleapis.com/auth/spreadsheets"]
 creds = Credentials.from_service_account_info(google_cloud_service_account, scopes=scopes)
 client = gspread.authorize(creds)
 
-sheet_id = os.getenv("Sheet_ID")
-sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid=478985565')
+Sheet_ID = os.getenv("Sheet_ID")
+sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/edit#gid=478985565')
 
 sheet = sheet.worksheet("OddsAutomationK")
 
@@ -30,7 +30,7 @@ if datetime.today().strftime('%Y-%m-%d') != sheet.acell("P1").value:
     os.system('python sportsoddsapi.py')
 os.system('python HitterData.py')
 
-sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid=478985565')
+sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/edit#gid=478985565')
 sh = sheet.worksheet("Calc")
 Names = sh.col_values(2)[4:34]
 SamplesSize = []
