@@ -26,8 +26,6 @@ sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/e
 
 sheet = sheet.worksheet("OddsAutomationK")
 
-if datetime.today().strftime('%Y-%m-%d') != sheet.acell("P1").value:
-    os.system('python sportsoddsapi.py')
 os.system('python HitterData.py')
 
 sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/edit#gid=478985565')
