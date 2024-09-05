@@ -79,7 +79,7 @@ def run_python_program():
 @app.route('/history')
 def history():
     sh = sheet.worksheet("Results")
-    df = pd.DataFrame(sh.get("B27:F1000"))
+    df = pd.DataFrame(sh.get("B27:F2000"))
     df.columns = ['Date',	'w/l',	'odds',	'Units risked',	'implied odds:']
     def highlight_high_scores(val):
         if val == 'w':
