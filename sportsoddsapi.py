@@ -6,6 +6,10 @@ import time
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import unicodedata
+import re
+from collections import defaultdict
+
 load_dotenv()
 
 google_cloud_service_account_json = os.getenv('GOOGLE_CLOUD_SERVICE_ACCOUNT')
@@ -22,64 +26,97 @@ client = gspread.authorize(creds)
 API_Key = os.getenv("API_Key")
 Sheet_ID = os.getenv("Sheet_ID")
 
+def regularize_name(name):
+    """Clean and standardize player names."""
+    name = unicodedata.normalize('NFD', name).encode('ascii', 'ignore').decode('utf-8')
+    name = re.sub(r"[''`]", "", name)
+    name = re.sub(r"[-]", " ", name)
+    name = re.sub(r"[^a-zA-Z\s]", "", name)
+    name_parts = name.split()
+    suffixes = {"jr", "sr", "ii", "iii", "iv", "v"}
+    if name_parts and name_parts[-1].lower() in suffixes:
+        name_parts.pop()
+    name_parts = [part.capitalize() for part in name_parts]
+    
+    # Return the full name instead of just the last name
+    if name_parts:
+        return " ".join(name_parts)
+    return ""
+
 def get_ids():
+    """Get MLB game IDs from the API."""
     response = requests.get(f'https://api.the-odds-api.com/v4/sports/baseball_mlb/events?apiKey={API_Key}')
     return response.json()
 
 game_ids = [game['id'] for game in get_ids()]
 
-# Helper function to get odds
 def get_odds(id, market):
-    response = requests.get(f"https://api.the-odds-api.com/v4/sports/baseball_mlb/events/{id}/odds?apiKey={API_Key}&regions=us&markets={market}&oddsFormat=american")
+    """Get odds for a specific market for a game ID."""
+    response = requests.get(f"https://api.the-odds-api.com/v4/sports/baseball_mlb/events/{id}/odds?apiKey={API_Key}&regions=us2&markets={market}&oddsFormat=american")
     if response.status_code == 200:
         return response.json()
     else:
-        print('Error:', response.status_code)
+        print(f'Error getting odds for {id}, market {market}: {response.status_code}')
         return None
 
-# function to make data more useable
-def flatten_data(data, Used_Names, mi, ma):
-    flat_data = []
+def flatten_data(data, price_range=None):
+    """
+    Extract odds data from FLIFF bookmaker, including both Over and Under lines.
+    Returns a dictionary with player names as keys and [line, price, over_under] as values.
+    """
+    flat_data = defaultdict(list)
+    
     for bookmaker in data['bookmakers']:
-        for market in bookmaker['markets']:
-            for outcome in market['outcomes']:
-                if outcome['price'] > mi and outcome['price'] < ma and outcome['name'] == 'Over':
-                    if Used_Names.count(outcome['description']) <= 0:
-                        flat_data.append([
-                            data['id'], data['sport_title'], data['commence_time'], 
-                            data['home_team'], data['away_team'], bookmaker['title'], 
-                            market['key'], market['last_update'], outcome['name'], outcome['name'], outcome['description'].split()[-1], 
-                            outcome['point'], outcome['price']
-                        ])
-                    Used_Names.append(outcome['description'])
+        if bookmaker["key"] == 'fliff':  # Only use data from FLIFF
+            for market in bookmaker['markets']:
+                for outcome in market['outcomes']:
+                    price = outcome['price']
+                    if price_range and (price < price_range[0] or price > price_range[1]):
+                        continue
+                        
+                    name = regularize_name(outcome['description'])
+                    over_under = outcome['name']  # "Over" or "Under"
+                    
+                    player_key = f"{name} {over_under}"
+                    flat_data[player_key] = [outcome['point'], price, over_under]
+    
     return flat_data
 
-# Function to update worksheet
-def update_worksheet(sheet_name, market, mi, ma):
+def update_worksheet(sheet_name, market, price_range=None):
+    """Update worksheet with odds data for specified market."""
     sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/edit#gid=478985565').worksheet(sheet_name)
-    sheet.clear()
-
-    headers = ['ID', 'Sport Title', 'Commence Time', 'Home Team', 'Away Team', 
-            'Bookmaker Key', 'Bookmaker Title', 'Last Update', 'Over/Under', 'Filler',
-            'Last Name', 'Outcome Point', 'Outcome Price']
-    sheet.insert_row(headers, 1)
+    sheet.batch_clear(["A1:C1000"])  
+    headers = ['Player', 'Type', 'Line', 'Price']
+    sheet.update(values=[headers], range_name='A1')
     
-    all_flattened_data = []
-    Used_Names = []
-
-    for id in game_ids:
-        data = get_odds(id, market)
+    cumulative = []
+    
+    for game_id in game_ids:
+        data = get_odds(game_id, market)
         if data:
-            flattened_data = flatten_data(data, Used_Names, mi, ma)
-            all_flattened_data.extend(flattened_data)
+            flattened_data = flatten_data(data, price_range)
+            if flattened_data:
+                rows = []
+                for player_key, values in flattened_data.items():
 
-    if all_flattened_data:
-        sheet.update(f'A2:M{len(all_flattened_data) + 1}', all_flattened_data)
+                    full_name = player_key.rsplit(' ', 1)[0]
+                    over_under = values[2]  # Type is the 3rd element
+                    line = values[0]        # Line is the 1st element
+                    price = values[1]       # Price is the 2nd element
 
-update_worksheet("OddsAutomationK", "pitcher_strikeouts", -170, 125)
-update_worksheet("OddsAutomationH", "pitcher_hits_allowed", -170, 125)
-update_worksheet("OddsAutomationPO", "pitcher_outs", -250, 250)
+                    rows.append([full_name, over_under, line, price])
+                cumulative.extend(rows)
+    
+    if cumulative:
+        sheet.update(values=cumulative, range_name="A2")  
+        print(f"Updated {sheet_name} with {len(cumulative)} rows of data for {market}")
+    else:
+        print(f"No data found for {market} from FLIFF")
 
-# Update the date in the sheet
+# Update worksheets with different markets and price ranges
+update_worksheet("OddsAutomationK", "pitcher_strikeouts", [-200, 200])
+#update_worksheet("OddsAutomationH", "pitcher_hits_allowed", [-200, 200])
+update_worksheet("OddsAutomationPO", "pitcher_outs", [-300, 300])
+
 sheet = client.open_by_url(f'https://docs.google.com/spreadsheets/d/{Sheet_ID}/edit#gid=478985565').worksheet("OddsAutomationK")
-sheet.update_cell(1, 16, datetime.today().strftime('%Y-%m-%d'))
+sheet.update_cell(1, 5, datetime.today().strftime('%Y-%m-%d'))

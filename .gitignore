@@ -2,3 +2,9 @@
 MLB2024.py
 credentials.json
 DataVisualization.py
+KrateNN.py
+__pycache__/
+Data/
+model_outputs/
+PitcherPictures/
+sheets/
